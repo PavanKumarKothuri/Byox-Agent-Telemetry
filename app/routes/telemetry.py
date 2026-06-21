@@ -25,6 +25,8 @@ def create_event(
         event_type=payload.event_type,
         latency=payload.latency,
         tokens=payload.tokens,
+        cost_usd=payload.cost_usd,
+        workflow_id=payload.workflow_id,
         status=payload.status,
         message=payload.message
     )

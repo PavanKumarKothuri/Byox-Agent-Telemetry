@@ -12,5 +12,8 @@ class TelemetryEvent(Base):
     latency = Column(Float)
     tokens = Column(Integer)
 
+    cost_usd = Column(Float)   # NEW
+    workflow_id = Column(String)
+
     status = Column(String)
     message = Column(String)

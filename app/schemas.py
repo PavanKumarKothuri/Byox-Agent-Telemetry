@@ -5,5 +5,7 @@ class TelemetryCreate(BaseModel):
     event_type: str
     latency: float
     tokens: int
+    cost_usd: float
+    workflow_id: str
     status: str
     message: str
