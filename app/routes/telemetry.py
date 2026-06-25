@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+import json
+
+from app.redis_client import r
 from app.database import SessionLocal
 from app.models import TelemetryEvent
 from app.schemas import TelemetryCreate
 
 router = APIRouter()
+
 
 def get_db():
     db = SessionLocal()
@@ -14,32 +18,28 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/telemetry")
-def create_event(
-    payload: TelemetryCreate,
-    db: Session = Depends(get_db)
-):
 
-    event = TelemetryEvent(
-        agent_name=payload.agent_name,
-        event_type=payload.event_type,
-        latency=payload.latency,
-        tokens=payload.tokens,
-        cost_usd=payload.cost_usd,
-        workflow_id=payload.workflow_id,
-        status=payload.status,
-        message=payload.message
+@router.post("/telemetry")
+def create_event(payload: TelemetryCreate):
+
+    r.lpush(
+        "telemetry_queue",
+        json.dumps(payload.dict())
     )
 
-    db.add(event)
-    db.commit()
-    db.refresh(event)
-
     return {
-        "message": "Telemetry stored",
-        "event_id": event.id
+        "message": "Event queued"
     }
+
 
 @router.get("/events")
 def get_events(db: Session = Depends(get_db)):
     return db.query(TelemetryEvent).all()
+
+
+@router.get("/queue-size")
+def queue_size():
+
+    return {
+        "queue_size": r.llen("telemetry_queue")
+    }
